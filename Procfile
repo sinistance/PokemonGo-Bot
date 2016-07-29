@@ -1,0 +1,1 @@
+python: python pokecli.py --config ./configs/config.json
