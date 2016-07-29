@@ -1,1 +1,1 @@
-python: python pokecli.py --config ./configs/config.json
+python: python pokecli.py
