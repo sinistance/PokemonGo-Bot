@@ -221,6 +221,37 @@ def init_config():
         type=int,
         default=50
     )
+
+    add_config(
+        parser,
+        load,
+        short_flag="-n",
+        long_flag="--navigator.type",
+        help="Set the navigator to be used(DEFAULT spiral)",
+        type=str,
+        default='spiral'
+    )
+
+    add_config(
+        parser,
+        load,
+        short_flag="-pm",
+        long_flag="--navigator.path_mode",
+        help="Set the mode for the path navigator (DEFAULT loop)",
+        type=str,
+        default="loop"
+    )
+
+    add_config(
+        parser,
+        load,
+        short_flag="-pf",
+        long_flag="--navigator.path_file",
+        help="Set the file containing the path for the path navigator (GPX or JSON).",
+        type=str,
+        default=None
+    )
+    
     add_config(
         parser,
         load,
@@ -379,6 +410,8 @@ def init_config():
 
     config.hatch_eggs = load.get("hatch_eggs", True)
     config.longer_eggs_first = load.get("longer_eggs_first", True)
+    
+    config.vips = load.get('vips',{})
 
     if config.auth_service not in ['ptc', 'google']:
         logging.error("Invalid Auth service specified! ('ptc' or 'google')")
