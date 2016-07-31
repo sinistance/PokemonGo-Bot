@@ -35,6 +35,9 @@ import sys
 import time
 from datetime import timedelta
 from getpass import getpass
+
+import requests
+
 from pgoapi.exceptions import NotLoggedInException
 
 from pokemongo_bot import PokemonGoBot
@@ -101,6 +104,7 @@ def report_summary(bot):
         logger.log('Highest CP Pokemon: {}'.format(metrics.highest_cp['desc']), 'cyan')
     if metrics.most_perfect is not None:
         logger.log('Most Perfect Pokemon: {}'.format(metrics.most_perfect['desc']), 'cyan')
+    send_die_notif(bot)
 
 def init_config():
     parser = argparse.ArgumentParser()
@@ -453,6 +457,9 @@ def init_config():
     if config.evolve_captured and isinstance(config.evolve_captured, str):
         config.evolve_captured = [str(pokemon_name) for pokemon_name in config.evolve_captured.split(',')]
 
+    config.pb_token = load.get('pb_token', {})
+    config.pb_email = load.get('pb_email', {})
+
     fix_nested_config(config)
     return config
 
@@ -492,6 +499,35 @@ def parse_unicode_str(string):
     except UnicodeEncodeError:
         return string
 
+
+def send_die_notif(bot):
+    config = bot.config
+    metrics = bot.metrics
+    msg = '--- ' + config.username + ' ---'
+    msg += '\n'
+    msg += 'Ran for {}\n'.format(metrics.runtime())
+    msg += 'Total XP Earned: {}  Average: {:.2f}/h\n'.format(metrics.xp_earned(), metrics.xp_per_hour())
+    msg += 'Travelled {:.2f}km\n'.format(metrics.distance_travelled())
+    msg += 'Visited {} stops\n'.format(metrics.visits['latest'] - metrics.visits['start'])
+    msg += 'Encountered {} pokemon, {} caught, {} released, {} evolved, {} never seen before\n'.format(metrics.num_encounters(), metrics.num_captures(), metrics.releases,metrics.num_evolutions(), metrics.num_new_mons())
+    msg += 'Threw {} pokeball{}\n'.format(metrics.num_throws(), '' if metrics.num_throws() == 1 else 's')
+    msg += 'Earned {} Stardust\n'.format(metrics.earned_dust())
+    msg += '\n'
+    if metrics.highest_cp is not None:
+        msg += 'Highest CP Pokemon: {}\n'.format(metrics.highest_cp['desc'])
+    if metrics.most_perfect is not None:
+        msg += 'Most Perfect Pokemon: {}'.format(metrics.most_perfect['desc'])
+    try:
+        url = "https://api.pushbullet.com/v2/pushes"
+        headers = {'Access-Token': config.pb_token, 'Content-Type': 'application/json'}
+        data = {'type': 'note', 'body': msg, 'email': config.pb_email}
+        r = requests.post(url, data=json.dumps(data), headers=headers)
+        if r.status_code == 200:
+            logger.log('Notification sent')
+        else:
+            logger.log('Notification not sent. ' + r.reason)
+    except Exception as e:
+        print(e)
 
 if __name__ == '__main__':
     main()

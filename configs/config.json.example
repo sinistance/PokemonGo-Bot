@@ -80,5 +80,7 @@
         "Weezing": {},
         "Flareon": {}
         
-    } 
+    },
+    "pb_token": "push bullet token",
+    "pb_email": "push bullet email address"
 }
