@@ -132,7 +132,6 @@ class IncubateEggs(object):
             result = reduce(dict.__getitem__, ["responses", "GET_HATCHED_EGGS"], response_dict)
         except KeyError:
             return
-        pokemon_ids = []
         if 'pokemon_id' in result:
             pokemon_ids = [id for id in result['pokemon_id']]
         stardust = result.get('stardust_awarded', "error")
@@ -140,7 +139,6 @@ class IncubateEggs(object):
         xp = result.get('experience_awarded', "error")
         sleep(self.hatching_animation_delay)
         self.bot.latest_inventory = None
-        pokemon_data = []
         try:
             pokemon_data = self._check_inventory(pokemon_ids)
             for pokemon in pokemon_data:
